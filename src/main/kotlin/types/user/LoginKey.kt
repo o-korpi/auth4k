@@ -6,7 +6,7 @@ interface LoginKey {
 
 
 data class Email(override val value: String) : LoginKey {
-
+    fun validate(): Boolean = value.contains('@')
 }
 
 @JvmInline

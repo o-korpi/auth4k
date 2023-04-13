@@ -8,13 +8,18 @@ import types.user.StoredUser
 import types.user.UserCredentials
 import types.user.UserId
 
+@Suppress("unused")
 sealed class AuthenticationException(message: String) : Exception(message) {
     object InvalidCredentials : AuthenticationException("Invalid login key or password")
     data class UserNotFound(val userLoginKey: LoginKey) : AuthenticationException("User $userLoginKey not found")
 }
 
+
+@Suppress("unused")
+data class SessionNotFound(val session: Session) : SessionException("Session $session not found")
+
+@Suppress("unused")
 sealed class SessionException(message: String) : Exception(message) {
-    data class SessionNotFound(val session: Session) : SessionException("Session $session not found")
     data class UserNotFound(val userLoginKey: LoginKey) : SessionException("User $userLoginKey not found")
 }
 
@@ -23,6 +28,7 @@ sealed class RegistrationException(message: String) : Exception(message) {
 }
 
 
+@Suppress("unused")
 class Authentication<User> (
     private val passwordHasher: PasswordHasher,
     private val getUserByLoginKey: (LoginKey) -> StoredUser?,

@@ -7,6 +7,7 @@ import org.http4k.core.cookie.cookie
 import types.auth.Session
 
 // todo: add alternative invoke to redirect to login page
+@Suppress("unused")
 object Filters {
     object SessionAuth {
         operator fun <User> invoke(

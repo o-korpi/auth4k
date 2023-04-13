@@ -4,7 +4,7 @@ val junitVersion = "5.9.2"
 val arrowVersion = "1.2.0-RC"
 
 group = "com.korpi"
-version = "1.0-SNAPSHOT"
+version = "1.0.1-SNAPSHOT"
 
 plugins {
     kotlin("jvm") version "1.8.0"
@@ -20,10 +20,6 @@ dependencies {
 
     implementation("org.http4k:http4k-client-okhttp:${http4kVersion}")
     implementation("org.http4k:http4k-core:${http4kVersion}")
-    implementation("org.http4k:http4k-format-kotlinx-serialization:${http4kVersion}")
-    implementation("org.http4k:http4k-resilience4j:${http4kVersion}")
-    implementation("org.http4k:http4k-server-ktorcio:${http4kVersion}")
-    implementation("org.http4k:http4k-template-pebble:${http4kVersion}")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}")
 
     implementation("at.favre.lib:bcrypt:0.10.2")  // Bcrypt

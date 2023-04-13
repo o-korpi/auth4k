@@ -21,11 +21,7 @@ object Filters {
                     auth.sessionLogin(session, getUserBySession).fold(
                         { Response(Status.UNAUTHORIZED) }, // Session not found
                         {
-                            val loginResponse = if (onLoginResponse != null) {
-                                onLoginResponse
-                            } else {
-                                next
-                            }
+                            val loginResponse = onLoginResponse ?: next
 
                             loginResponse(req).cookie(cookieFactory.create(session))
                         }

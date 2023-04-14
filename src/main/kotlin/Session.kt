@@ -14,14 +14,14 @@ class SessionCookieFactory(
     fun create(
         session: Session,
         ttl: Long = this.ttl,
-        httpOnly: Boolean = true
+        secure: Boolean = true
     ): Cookie =
         Cookie(
             name = cookieName,
             value = session.value,
             maxAge = ttl,
-            secure = true,
-            httpOnly = httpOnly,
+            secure = secure,
+            httpOnly = true,
             sameSite = SameSite.Lax
         )
 
@@ -29,7 +29,6 @@ class SessionCookieFactory(
         name = cookieName,
         value = "",
         maxAge = -1,
-        secure = true,
         sameSite = SameSite.Lax
     )
 }

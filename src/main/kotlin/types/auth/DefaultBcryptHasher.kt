@@ -2,7 +2,7 @@ package types.auth
 
 import at.favre.lib.crypto.bcrypt.BCrypt
 
-class DefaultBcryptHasher : PasswordHasher {
+object DefaultBcryptHasher : PasswordHasher {
     override fun hash(rawPassword: String): String =
         BCrypt.withDefaults().hashToString(12, rawPassword.toCharArray())
 

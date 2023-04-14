@@ -1,6 +1,7 @@
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
+import types.auth.DefaultBcryptHasher
 import types.auth.PasswordHasher
 import types.auth.Session
 import types.user.LoginKey
@@ -29,13 +30,13 @@ sealed class RegistrationException(message: String) : Exception(message) {
 
 
 @Suppress("unused")
-class Authentication<User> (
-    private val passwordHasher: PasswordHasher,
-    private val getUserByLoginKey: (LoginKey) -> StoredUser?,
+class Authentication<User, KeyType : LoginKey> (
+    private val passwordHasher: PasswordHasher = DefaultBcryptHasher,
+    private val getUserByLoginKey: (KeyType) -> StoredUser?,
 ) {
 
     fun login(
-        userCredentials: UserCredentials,
+        userCredentials: UserCredentials<KeyType>,
         createSession: () -> Session
     ): Either<AuthenticationException, Session> {
         val user: StoredUser = this.getUserByLoginKey(userCredentials.loginKey)
@@ -53,7 +54,7 @@ class Authentication<User> (
     }
 
     fun login(
-        userCredentials: UserCredentials,
+        userCredentials: UserCredentials<KeyType>,
         createSession: (Session, UserId) -> Unit
     ): Either<AuthenticationException, Session> {
         val user: StoredUser = this.getUserByLoginKey(userCredentials.loginKey)
@@ -79,7 +80,7 @@ class Authentication<User> (
 
     fun register(
         user: User,
-        userCredentials: UserCredentials,
+        userCredentials: UserCredentials<KeyType>,
         addToDatabase: (User) -> Unit
     ): Either<RegistrationException, User> {
         this.getUserByLoginKey(userCredentials.loginKey) ?:
@@ -90,10 +91,10 @@ class Authentication<User> (
         return user.also(addToDatabase).right()
     }
 
-    fun logout(userCredentials: UserCredentials, removeSession: (UserCredentials) -> Unit) = removeSession(userCredentials)
-    fun <User : UserCredentials> logoutUser(user: User, removeSession: (UserCredentials) -> Unit) = removeSession(user)
+    fun logout(userCredentials: UserCredentials<KeyType>, removeSession: (UserCredentials<KeyType>) -> Unit) = removeSession(userCredentials)
+    fun <User : UserCredentials<KeyType>> logoutUser(user: User, removeSession: (UserCredentials<KeyType>) -> Unit) = removeSession(user)
     fun logout(userId: UserId, removeSession: (UserId) -> Unit) = removeSession(userId)
 
-    fun delete(userCredentials: UserCredentials, deleteFromDatabase: (UserCredentials) -> Unit) = deleteFromDatabase(userCredentials)
+    fun delete(userCredentials: UserCredentials<KeyType>, deleteFromDatabase: (UserCredentials<KeyType>) -> Unit) = deleteFromDatabase(userCredentials)
     fun delete(userId: UserId, deleteFromDatabase: (UserId) -> Unit) = deleteFromDatabase(userId)
 }

@@ -5,12 +5,14 @@ import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.core.cookie.cookie
 import types.auth.Session
+import types.user.Email
+import types.user.LoginKey
 
 @Suppress("unused")
 object Filters {
     object SessionAuth {
         operator fun <User> invoke(
-            auth: Authentication<User>,
+            auth: Authentication<User, LoginKey>,
             cookieFactory: SessionCookieFactory = SessionCookieFactory(),
             getUserBySession: (Session) -> Either<SessionException, User>,
             onLoginResponse: ((Request) -> Response)? = null
@@ -31,7 +33,7 @@ object Filters {
         } }
 
         operator fun <User> invoke(
-            auth: Authentication<User>,
+            auth: Authentication<User, LoginKey>,
             redirectRoute: String,
             cookieFactory: SessionCookieFactory = SessionCookieFactory(),
             getUserBySession: (Session) -> Either<SessionException, User>,

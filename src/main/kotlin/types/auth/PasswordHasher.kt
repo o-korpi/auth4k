@@ -1,11 +1,12 @@
 package types.auth
 
+import types.user.HashedPassword
+import types.user.RawPassword
+
 interface PasswordHasher {
     /** Takes a raw password and hashes it. */
-    fun hash(rawPassword: String): String
-
-    /** */
+    fun hash(rawPassword: RawPassword): HashedPassword
 
     /** Checks if a raw password matches a hashed password */
-    fun validate(rawPassword: String, password: String): Boolean
+    fun validate(rawPassword: RawPassword, password: HashedPassword): Boolean
 }

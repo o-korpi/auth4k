@@ -7,12 +7,13 @@ import org.http4k.core.cookie.cookie
 import types.auth.Session
 import types.user.Email
 import types.user.LoginKey
+import types.user.UserEntity
 
 @Suppress("unused")
 object Filters {
     object SessionAuth {
-        operator fun <User> invoke(
-            auth: Authentication<User, LoginKey>,
+        operator fun <User : UserEntity> invoke(
+            auth: Authentication<User>,
             cookieFactory: SessionCookieFactory = SessionCookieFactory(),
             getUserBySession: (Session) -> Either<SessionException, User>,
             onLoginResponse: ((Request) -> Response)? = null
@@ -32,8 +33,8 @@ object Filters {
             )
         } }
 
-        operator fun <User> invoke(
-            auth: Authentication<User, LoginKey>,
+        operator fun <User : UserEntity> invoke(
+            auth: Authentication<User>,
             redirectRoute: String,
             cookieFactory: SessionCookieFactory = SessionCookieFactory(),
             getUserBySession: (Session) -> Either<SessionException, User>,

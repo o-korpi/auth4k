@@ -3,33 +3,31 @@ import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
 import types.auth.DefaultBcryptHasher
-import types.auth.PasswordHasher
 import types.user.*
 import kotlin.random.Random
 
 class AuthenticationTest {
 
-    data class UserShellImpl(override val credentials: RawUserCredentials<Email>) : UserShell<Email, NoIdUserImpl> {
-        override fun toNoIdUser(details: UserDetails, credentials: HashedUserCredentials<Email>): NoIdUserImpl =
-            NoIdUserImpl(details, credentials)
-
-    }
-
-    data class NoIdUserImpl(override val details: UserDetails, override val credentials: HashedUserCredentials<Email>) : NoIdUser<Email, UserImpl> {
-        override fun assignId(id: UserId): UserImpl =
-            UserImpl(id, details, credentials)
-    }
 
     data class UserImpl(
-        override val id: UserId,
-        override val details: UserDetails,
-        override val credentials: HashedUserCredentials<Email>
-    ) : User<Email>
+        override val userId: UserId?,
+        override val userDetails: UserDetails?,
+        override val userCredentials: HashedUserCredentials?
+    ) : UserEntity()
+
+    class UserBuilderImpl : UserBuilder<UserImpl> {
+        override fun addId(user: UserImpl, userId: UserId): UserImpl = UserImpl(userId, user.userDetails, user.userCredentials)
+
+        override fun addCredentials(user: UserImpl, credentials: HashedUserCredentials): UserImpl = UserImpl(user.userId, user.userDetails, credentials)
+        override fun addDetails(user: UserImpl, details: UserDetails): UserImpl = UserImpl(user.userId, details, user.userCredentials)
+    }
+    private val builder = UserBuilderImpl()
 
     private val userDb = mutableMapOf<UserId, UserImpl>()
-    private fun addToDb(noIdUser: NoIdUserImpl): UserId =
+    private fun addToDb(user: UserImpl): UserId =
         getFreeId().also { id ->
-            userDb[id] = noIdUser.assignId(id)
+            println(user)
+            userDb[id] = builder.addId(user, id)
         }
 
     private fun getFreeId(): UserId {
@@ -40,10 +38,10 @@ class AuthenticationTest {
             randomId
     }
 
-    val getUserByLoginKey = { loginKey: Email -> userDb.filter {  entry: Map.Entry<UserId, UserImpl> ->
-        entry.value.credentials.loginKey.value == loginKey.value
+    val getUserByLoginKey = { loginKey: String -> userDb.filter {  entry: Map.Entry<UserId, UserImpl> ->
+        entry.value.getCredentials().loginKey == loginKey
     }.values.firstOrNull() }
-    private val auth = Authentication<Email> {
+    private val auth = Authentication<UserImpl>(userBuilder = builder) {
         getUserByLoginKey(it)
     }
 
@@ -55,6 +53,7 @@ class AuthenticationTest {
 
     @Test
     fun login() {
+
     }
 
     @Test
@@ -68,19 +67,17 @@ class AuthenticationTest {
     @Test
     fun register() {
         val userCount = userDb.size
-        val newUserCredentials = RawUserCredentials(Email("test@testmail.com"), RawPassword("testpassword123"))
-        val newUser = UserShellImpl(newUserCredentials)
-        class Details : UserDetails
+        val details = object : UserDetails {}
+        val newUserCredentials = RawUserCredentials("test@testmail.com", RawPassword("testpassword123"))
+        val newUser = UserImpl(null, details, null)
 
-        val registration = auth.register(newUser, Details()) {
-            println("here")
-            addToDb(it)
-        }
+        val registration = auth.register(newUser, newUserCredentials, ::addToDb)
         assertFalse(registration.fold({ true }, { false }))
-        val id = registration.getOrNull()!!
-        assertEquals(newUser, userDb[newUser.id.value])
+        val id: UserId = registration.getOrNull()!!
+
+        assertEquals(newUserCredentials.loginKey, userDb[id]!!.getCredentials().loginKey)
         assertEquals(userCount + 1, userDb.size)
-        val newUserPassword = userDb[newUser.id.value]?.credentials?.password
+        val newUserPassword = userDb[id]?.getCredentials()?.password
         assertNotNull(newUserPassword)
         assertNotEquals(newUserCredentials.password, newUserPassword)
         assertTrue(DefaultBcryptHasher.validate(newUserCredentials.password, newUserPassword!!))

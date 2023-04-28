@@ -2,21 +2,21 @@ package types.user
 
 import types.auth.PasswordHasher
 
-sealed interface UserCredentials<KeyType : LoginKey> {
-    val loginKey: KeyType
+sealed interface UserCredentials {
+    val loginKey: String
     val password: Password
 }
 
-data class RawUserCredentials<KeyType : LoginKey>(
-    override val loginKey: KeyType,
+data class RawUserCredentials(
+    override val loginKey: String,
     override val password: RawPassword
-) : UserCredentials<KeyType> {
-    fun hash(hasher: PasswordHasher): HashedUserCredentials<KeyType> =
+) : UserCredentials {
+    fun hash(hasher: PasswordHasher): HashedUserCredentials =
         HashedUserCredentials(loginKey, hasher.hash(password))
 }
 
-data class HashedUserCredentials<KeyType : LoginKey> (
-    override val loginKey: KeyType,
+data class HashedUserCredentials(
+    override val loginKey: String,
     override val password: HashedPassword,
 
-): UserCredentials<KeyType>
+): UserCredentials

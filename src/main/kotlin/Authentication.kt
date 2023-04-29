@@ -1,10 +1,12 @@
+package auth4k
+
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import types.auth.DefaultBcryptHasher
-import types.auth.PasswordHasher
-import types.auth.Session
-import types.user.*
+import auth4k.types.auth.DefaultBcryptHasher
+import auth4k.types.auth.PasswordHasher
+import auth4k.types.auth.Session
+import auth4k.types.user.*
 
 @Suppress("unused")
 sealed class AuthenticationException(message: String) : Exception(message) {

@@ -1,8 +1,8 @@
-package types.auth
+package auth4k.types.auth
 
 import at.favre.lib.crypto.bcrypt.BCrypt
-import types.user.HashedPassword
-import types.user.RawPassword
+import auth4k.types.user.HashedPassword
+import auth4k.types.user.RawPassword
 
 object DefaultBcryptHasher : PasswordHasher {
     override fun hash(rawPassword: RawPassword): HashedPassword =

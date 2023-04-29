@@ -1,10 +1,12 @@
+package auth4k
+
 import arrow.core.Option
 import arrow.core.toOption
 import org.http4k.core.Request
 import org.http4k.core.cookie.Cookie
 import org.http4k.core.cookie.SameSite
 import org.http4k.core.cookie.cookie
-import types.auth.Session
+import auth4k.types.auth.Session
 import java.util.*
 
 class SessionCookieFactory(

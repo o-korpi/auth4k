@@ -1,6 +1,6 @@
-package types.user
+package auth4k.types.user
 
-import types.auth.PasswordHasher
+import auth4k.types.auth.PasswordHasher
 
 sealed interface UserCredentials {
     val loginKey: String

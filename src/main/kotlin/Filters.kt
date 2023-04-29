@@ -1,13 +1,15 @@
+package auth4k
+
 import arrow.core.Either
 import org.http4k.core.Filter
 import org.http4k.core.Request
 import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.core.cookie.cookie
-import types.auth.Session
-import types.user.Email
-import types.user.LoginKey
-import types.user.UserEntity
+import auth4k.types.auth.Session
+import auth4k.types.user.Email
+import auth4k.types.user.LoginKey
+import auth4k.types.user.UserEntity
 
 @Suppress("unused")
 object Filters {

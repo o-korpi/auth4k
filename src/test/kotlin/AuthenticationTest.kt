@@ -4,9 +4,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
-import types.auth.DefaultBcryptHasher
-import types.auth.Session
-import types.user.*
+import auth4k.types.auth.DefaultBcryptHasher
+import auth4k.types.auth.Session
+import auth4k.types.user.*
 import java.util.*
 import kotlin.random.Random
 
@@ -44,7 +44,7 @@ class AuthenticationTest {
     val getUserByLoginKey = { loginKey: String -> userDb.filter {  entry: Map.Entry<UserId, UserImpl> ->
         entry.value.getCredentials().loginKey == loginKey
     }.values.firstOrNull() }
-    private val auth = Authentication<UserImpl>(userBuilder = builder) {
+    private val auth = auth4k.Authentication<UserImpl>(userBuilder = builder) {
         getUserByLoginKey(it)
     }
 
@@ -73,12 +73,12 @@ class AuthenticationTest {
         val invalidLoginCredentials = RawUserCredentials("wrong@testmail.com", RawPassword("testpassword123"))
         val invalidLogin = auth.login(invalidLoginCredentials, createSession)
         assertTrue(invalidLogin.isLeft())
-        assertInstanceOf(AuthenticationException.UserNotFound::class.java, invalidLogin.leftOrNull())
+        assertInstanceOf(auth4k.AuthenticationException.UserNotFound::class.java, invalidLogin.leftOrNull())
         sessionDb.clear()
         val wrongPasswordCredentials = RawUserCredentials("test@testmail.com", RawPassword("wrongpassword123"))
         val wrongPasswordLogin = auth.login(wrongPasswordCredentials, createSession)
         assertTrue(wrongPasswordLogin.isLeft())
-        assertInstanceOf(AuthenticationException.InvalidCredentials::class.java, wrongPasswordLogin.leftOrNull())
+        assertInstanceOf(auth4k.AuthenticationException.InvalidCredentials::class.java, wrongPasswordLogin.leftOrNull())
     }
 
     @Test
@@ -96,23 +96,23 @@ class AuthenticationTest {
         createSession(existingSession, id)
 
         val login = auth.sessionLogin(existingSession) {
-            userDb[sessionDb[it]]?.right() ?: SessionException.UserNotFound(it).left()
+            userDb[sessionDb[it]]?.right() ?: auth4k.SessionException.UserNotFound(it).left()
         }
 
         assertTrue(login.isRight())
         assertEquals(id, login.getOrNull()?.userId)
 
         val invalidLogin = auth.sessionLogin(Session(UUID.randomUUID().toString())) {
-            userDb[sessionDb[it]]?.right() ?: SessionException.UserNotFound(it).left()
+            userDb[sessionDb[it]]?.right() ?: auth4k.SessionException.UserNotFound(it).left()
         }
 
         assertTrue(invalidLogin.isLeft())
-        assertInstanceOf(SessionException.UserNotFound::class.java, invalidLogin.leftOrNull())
+        assertInstanceOf(auth4k.SessionException.UserNotFound::class.java, invalidLogin.leftOrNull())
 
         // test scenario where user no longer exists
         userDb.clear()
         val attempt = auth.sessionLogin(existingSession) {
-            userDb[sessionDb[it]]?.right() ?: SessionException.UserNotFound(it).left()
+            userDb[sessionDb[it]]?.right() ?: auth4k.SessionException.UserNotFound(it).left()
         }
         assertTrue(attempt.isLeft())
     }

@@ -1,7 +1,7 @@
-package types.auth
+package auth4k.types.auth
 
-import types.user.HashedPassword
-import types.user.RawPassword
+import auth4k.types.user.HashedPassword
+import auth4k.types.user.RawPassword
 
 interface PasswordHasher {
     /** Takes a raw password and hashes it. */

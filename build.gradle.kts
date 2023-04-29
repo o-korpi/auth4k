@@ -4,7 +4,7 @@ val junitVersion = "5.9.2"
 val arrowVersion = "1.2.0-RC"
 
 group = "com.korpi"
-version = "1.0.0"
+version = "1.0.1"
 
 plugins {
     kotlin("jvm") version "1.8.0"

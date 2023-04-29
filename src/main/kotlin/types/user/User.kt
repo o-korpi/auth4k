@@ -1,4 +1,4 @@
-package types.user
+package auth4k.types.user
 
 interface UserDetails
 

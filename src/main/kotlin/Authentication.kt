@@ -18,7 +18,7 @@ data class SessionNotFound(val session: Session) : SessionException("Session $se
 
 @Suppress("unused")
 sealed class SessionException(message: String) : Exception(message) {
-    data class UserNotFound(val userLoginKey: String) : SessionException("User $userLoginKey not found")
+    data class UserNotFound(val userSession: Session) : SessionException("User with session $userSession not found")
 }
 
 sealed class RegistrationException(message: String) : Exception(message) {
@@ -52,6 +52,9 @@ class Authentication<User : UserEntity> (
         return createSession().right()
     }
 
+    /**
+     * Authenticates the user, and if successful, generates a session ID which the caller can use.
+     * */
     fun login(
         userCredentials: RawUserCredentials,
         createSession: (Session, UserId) -> Unit
@@ -71,7 +74,10 @@ class Authentication<User : UserEntity> (
             .right()
     }
 
-    /** Logs the user in using a session. Does **not** refresh the session on its own. */
+    /** Logs the user in using a session.
+     *
+     * Does **not** refresh the session on its own. Such behaviour has to be implemented by the caller.
+     * */
     fun sessionLogin(
         session: Session,
         getUserBySession: (Session) -> Either<SessionException, User>,

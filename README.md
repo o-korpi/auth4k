@@ -17,7 +17,7 @@ data class User : UserEntity(
 )
 ```
 
-Unfortunately, because of some limitations, we also need to implement `UserBuilder`:
+Unfortunately, because of some limitations, we also need to implement the `UserBuilder` class:
 ```kotlin
 object MyUserBuilder : UserBuilder<User> {
 	override fun addId(user: User, userId: UserId): User =  

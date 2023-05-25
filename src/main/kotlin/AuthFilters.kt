@@ -14,7 +14,7 @@ object AuthFilters {
         operator fun <User : UserEntity> invoke(
             auth: Authentication<User>,
             cookieFactory: SessionCookieFactory = SessionCookieFactory(),
-            exemptRoutes: List<String>,
+            exemptRoutes: Set<String>,
             getUserBySession: (Session) -> Either<SessionException, User>,
             onLoginResponse: ((Request) -> Response)? = null
         ) = Filter { next -> { req ->
@@ -42,7 +42,7 @@ object AuthFilters {
             auth: Authentication<User>,
             redirectRoute: String,
             cookieFactory: SessionCookieFactory = SessionCookieFactory(),
-            exemptRoutes: List<String>,
+            exemptRoutes: Set<String>,
             getUserBySession: (Session) -> Either<SessionException, User>,
             onLoginResponse: ((Request) -> Response)? = null
         ) = Filter { next -> { req ->

@@ -122,5 +122,5 @@ val myRoutes = routes(
 ```
 
 Don't forget to add these routes to the `exemptRoutes` set:
-`exemptRoutes = listOf("/login", "/register")`
+`exemptRoutes = setOf("/login", "/register")`
 

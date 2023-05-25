@@ -53,7 +53,7 @@ class AuthFiltersTest {
         }
         val filter = AuthFilters.SessionAuth(
             auth = auth,
-            exemptRoutes = listOf("/login"),
+            exemptRoutes = setOf("/login"),
             getUserBySession = { session: Session -> sdb[session]?.right() ?: SessionException.UserNotFound(session).left() }
         )
 
@@ -86,7 +86,7 @@ class AuthFiltersTest {
         }
         val filter = AuthFilters.SessionAuth(
             auth = auth,
-            exemptRoutes = listOf("/register"),
+            exemptRoutes = setOf("/register"),
             getUserBySession = { session: Session -> sdb[session]?.right() ?: SessionException.UserNotFound(session).left() }
         )
         val app = filter.then(

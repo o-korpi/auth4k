@@ -58,9 +58,8 @@ Once we have our authentication class finished, we can finally plug it into the 
 val authFilter = AuthFilters.sessionAuth(
 	auth = auth,
 	exemptRoutes = setOf(),
-	getUserBySession = { 
-		session -> mySessionDb.getUser(session)?.right() ?: 
-			SessionException.UserNotFound(session).left() 
+	getUserBySession = { session -> mySessionDb.getUser(session)?.right() ?: 
+            SessionException.UserNotFound(session).left() 
 	}
 )
 
@@ -90,9 +89,12 @@ val myRoutes = routes(
 		auth.login(userCredentials) { session, userId ->
 			// We must tell the login function how to add our user to the session database on authentication success. How this is done depends on your database and the libraries used for it.
 			mySessionDb.addSession(session, userId)
-		}
-		
-		Response(OK)
+		}.fold(
+            { Response(UNAUTHORIZED) },
+            { Response(OK)
+                .cookie(sessionCookieFactory().create(session))
+            }
+        )
 	},
 
 	"/register" bind POST to { req ->

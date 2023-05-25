@@ -58,7 +58,8 @@ Once we have our authentication class finished, we can finally plug it into the 
 val authFilter = AuthFilters.sessionAuth(
 	auth = auth,
 	exemptRoutes = setOf(),
-	getUserBySession = { session -> mySessionDb.getUser(session)?.right() ?: 
+	getUserBySession = { session -> 
+        mySessionDb.getUser(session)?.right() ?: 
             SessionException.UserNotFound(session).left() 
 	}
 )

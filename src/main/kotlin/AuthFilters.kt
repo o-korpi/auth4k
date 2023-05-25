@@ -9,7 +9,6 @@ import org.http4k.core.cookie.cookie
 import auth4k.types.auth.Session
 import auth4k.types.user.UserEntity
 
-@Suppress("unused")
 object AuthFilters {
     object SessionAuth {
         operator fun <User : UserEntity> invoke(

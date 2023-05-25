@@ -18,6 +18,7 @@ abstract class UserEntity {
     fun getDetails(): UserDetails = userDetails ?: throw UserEntityException.DetailsNotGivenException
     fun hasDetails(): Boolean = userDetails != null
     fun getCredentials(): HashedUserCredentials = userCredentials ?: throw UserEntityException.UserPasswordNotHashedException
+
 }
 
 interface UserBuilder<T : UserEntity> {

@@ -55,6 +55,8 @@ class Authentication<User : UserEntity> (
 
     /**
      * Authenticates the user, and if successful, generates a session ID which the caller can use.
+     *
+     * Does not generate the session cookie.
      * */
     fun login(
         userCredentials: RawUserCredentials,
@@ -85,6 +87,9 @@ class Authentication<User : UserEntity> (
         getUserBySession: (Session) -> Either<SessionException, User>,
     ): Either<SessionException, User> = getUserBySession(session)
 
+    /** Registers a user, given an empty user shell (containing at most their details), their credentials
+     * and a method to add them to the database. Note that the function which adds them to the database must
+     * also give them their ID, using the `UserBuilder`. */
     fun register(
         user: User,
         credentials: RawUserCredentials,
@@ -103,7 +108,6 @@ class Authentication<User : UserEntity> (
         return userBuilder
             .addCredentials(user, credentials.hash(passwordHasher))
             .let { newUser ->
-                println("new user $newUser")
                 addToDatabase(newUser)
                     .also { id -> userBuilder.addId(newUser, id) }
             }

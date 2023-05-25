@@ -1,8 +1,6 @@
 import arrow.core.left
 import arrow.core.right
-import auth4k.AuthFilters
-import auth4k.Authentication
-import auth4k.SessionException
+import auth4k.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -14,6 +12,8 @@ import com.natpryce.hamkrest.assertion.assertThat
 import org.http4k.core.*
 import org.http4k.core.Method.*
 import org.http4k.core.Status.Companion.OK
+import org.http4k.core.cookie.cookie
+import org.http4k.core.cookie.cookies
 import org.http4k.hamkrest.hasStatus
 import org.http4k.routing.*
 import java.util.*
@@ -71,6 +71,78 @@ class AuthFiltersTest {
         // should be able to access a page exempt from auth
         val successResponse = app(Request(GET, "/login"))
         assertThat(successResponse, hasStatus(OK))
+
+    }
+
+    @Test
+    fun testRegisterAndLogin() {
+        val auth = Authentication(
+            DefaultBcryptHasher,
+            UserBuilderImpl
+        ) { loginKey: String ->
+            db.filter { it.value.getCredentials().loginKey == loginKey }.map { it.value }.firstOrNull()
+        }
+        val filter = AuthFilters.SessionAuth(
+            auth = auth,
+            exemptRoutes = listOf("/register"),
+            getUserBySession = { session: Session -> sdb[session]?.right() ?: SessionException.UserNotFound(session).left() }
+        )
+        val app = filter.then(
+            routes(
+                "/ping" bind GET to {
+                    Response(OK).body("pong")
+                },
+                "/register" bind POST to { req ->
+                    // crude method to get values here, use a json library in a real scenario
+                    val map = req.body.toString()
+                        .removePrefix("{")
+                        .removeSuffix("}")
+                        .replace("'", "")
+                        .split(',').associate {
+                            val kv = it.split(':')
+                                .map { it.trim() }
+
+                            kv.first() to kv.last()
+                        }
+
+                    val id = auth.register(
+                        User(
+                            null,
+                            (object : UserDetails {}),
+                            null
+                        ),
+                        RawUserCredentials(
+                            map["loginKey"]!!,
+                            RawPassword(map["password"]!!)
+                        )
+                    ) {
+                        val userId = UserId(1L)
+                        db[userId] = UserBuilderImpl.addId(it, userId)
+                        userId
+                    }
+
+                    val session = generateSession()
+                    val loginUser = auth.login(RawUserCredentials("hello@world.com", RawPassword("hunter2"))) { _, userId ->
+                        sdb[session] = db[userId]!!
+                    }
+                    assertTrue(loginUser.isRight())
+
+                    val cookie = SessionCookieFactory().create(
+                        session,
+                        secure = false
+                    )
+                    println(cookie)
+
+                    Response(OK).body("registered $id").cookie(cookie)
+                }
+            )
+        )
+        val response = app(Request(POST, "/register").body("{ 'loginKey': 'hello@world.com', 'password': 'hunter2'}"))
+        assertThat(response, hasStatus(OK))
+        assertEquals(1, response.cookies().size)
+
+        val accessAttempt = app(Request(GET, "/ping").cookie(response.cookies().first().also { println(it) }))
+        assertThat(accessAttempt, hasStatus(OK))
 
     }
 }

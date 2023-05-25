@@ -35,7 +35,6 @@ class Authentication<User : UserEntity> (
     private val userBuilder: UserBuilder<User>,
     private val getUserByLoginKey: (String) -> User?,
 ) {
-
     fun login(
         rawUserCredentials: RawUserCredentials,
         createSession: () -> Session
@@ -71,6 +70,7 @@ class Authentication<User : UserEntity> (
                 .InvalidCredentials
                 .left()
         }
+
         return generateSession()
             .also { session -> createSession(session, user.getId()) }
             .right()
@@ -100,7 +100,6 @@ class Authentication<User : UserEntity> (
                 .InvalidUser(user)
                 .left()
 
-        println("User $user pre")
         return userBuilder
             .addCredentials(user, credentials.hash(passwordHasher))
             .let { newUser ->

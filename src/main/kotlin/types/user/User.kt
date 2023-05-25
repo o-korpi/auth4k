@@ -13,6 +13,8 @@ abstract class UserEntity {
     abstract val userDetails: UserDetails?
     abstract val userCredentials: HashedUserCredentials?
     fun getId(): UserId = userId ?: throw UserEntityException.IdNotGivenException
+
+    @Suppress("unused")
     fun getDetails(): UserDetails = userDetails ?: throw UserEntityException.DetailsNotGivenException
     fun hasDetails(): Boolean = userDetails != null
     fun getCredentials(): HashedUserCredentials = userCredentials ?: throw UserEntityException.UserPasswordNotHashedException

@@ -59,8 +59,8 @@ val authFilter = AuthFilters.sessionAuth(
 	auth = auth,
 	exemptRoutes = setOf(),
 	getUserBySession = { session -> 
-        mySessionDb.getUser(session)?.right() ?: 
-            SessionException.UserNotFound(session).left() 
+            mySessionDb.getUser(session)?.right() ?: 
+                SessionException.UserNotFound(session).left() 
 	}
 )
 

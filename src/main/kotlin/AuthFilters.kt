@@ -18,6 +18,7 @@ object AuthFilters {
             getUserBySession: (Session) -> Either<SessionException, User>,
             onLoginResponse: ((Request) -> Response)? = null
         ) = Filter { next -> { req ->
+
             if (exemptRoutes.contains(req.uri.path)) {
                 next(req)
             } else {

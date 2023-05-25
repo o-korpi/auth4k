@@ -80,8 +80,7 @@ class AuthFiltersTest {
     @Test
     fun testRegisterAndLoginAndLogout() {
         val auth = Authentication(
-            DefaultBcryptHasher,
-            UserBuilderImpl
+            userBuilder = UserBuilderImpl
         ) { loginKey: String ->
             db.filter { it.value.getCredentials().loginKey == loginKey }.map { it.value }.firstOrNull()
         }
@@ -129,6 +128,7 @@ class AuthFiltersTest {
                         sdb[session] = db[userId]!!
                     }
                     assertTrue(loginUser.isRight())
+
 
                     val cookie = SessionCookieFactory().create(
                         session,

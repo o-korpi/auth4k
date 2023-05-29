@@ -7,12 +7,13 @@ import org.http4k.core.Response
 import org.http4k.core.Status
 import org.http4k.core.cookie.cookie
 import auth4k.types.auth.Session
+import auth4k.types.user.IdType
 import auth4k.types.user.UserEntity
 
 object AuthFilters {
     object SessionAuth {
-        operator fun <User : UserEntity> invoke(
-            auth: Authentication<User>,
+        operator fun <Id : IdType, User : UserEntity<Id>> invoke(
+            auth: Authentication<Id, User>,
             cookieFactory: SessionCookieFactory = SessionCookieFactory(),
             exemptRoutes: Set<String>,
             getUserBySession: (Session) -> Either<SessionException, User>,
@@ -38,8 +39,8 @@ object AuthFilters {
             }
         } }
 
-        operator fun <User : UserEntity> invoke(
-            auth: Authentication<User>,
+        operator fun <Id : IdType, User : UserEntity<Id>> invoke(
+            auth: Authentication<Id, User>,
             redirectRoute: String,
             cookieFactory: SessionCookieFactory = SessionCookieFactory(),
             exemptRoutes: Set<String>,

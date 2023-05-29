@@ -25,14 +25,14 @@ sealed class SessionException(message: String) : Exception(message) {
 
 sealed class RegistrationException(message: String) : Exception(message) {
     data class UserAlreadyExists(val userLoginKey: String) : RegistrationException("User $userLoginKey already exists")
-    data class InvalidUser(val user: UserEntity) : RegistrationException("User $user has no user details")
+    data class InvalidUser(val loginKey: String) : RegistrationException("User $loginKey has no user details")
 }
 
 
 @Suppress("unused")
-class Authentication<User : UserEntity> (
+class Authentication<Id : IdType, User : UserEntity<Id>> (
     private val passwordHasher: PasswordHasher = DefaultBcryptHasher,
-    private val userBuilder: UserBuilder<User>,
+    private val userBuilder: UserBuilder<Id, User>,
     private val getUserByLoginKey: (String) -> User?,
 ) {
     fun login(
@@ -60,7 +60,7 @@ class Authentication<User : UserEntity> (
      * */
     fun login(
         userCredentials: RawUserCredentials,
-        createSession: (Session, UserId) -> Unit
+        createSession: (Session, Id) -> Unit
     ): Either<AuthenticationException, Session> {
         val user: User = this.getUserByLoginKey(userCredentials.loginKey)
             ?: return AuthenticationException
@@ -93,8 +93,8 @@ class Authentication<User : UserEntity> (
     fun register(
         user: User,
         credentials: RawUserCredentials,
-        addToDatabase: (User) -> UserId
-    ): Either<RegistrationException, UserId> {
+        addToDatabase: (User) -> Id
+    ): Either<RegistrationException, Id> {
         if (this.getUserByLoginKey(credentials.loginKey) != null)
             return RegistrationException
                 .UserAlreadyExists(credentials.loginKey)
@@ -102,7 +102,7 @@ class Authentication<User : UserEntity> (
 
         if (!user.hasDetails())
             return RegistrationException
-                .InvalidUser(user)
+                .InvalidUser(credentials.loginKey)
                 .left()
 
         return userBuilder
@@ -116,8 +116,8 @@ class Authentication<User : UserEntity> (
 
     fun logout(userLoginKey: String, removeSession: (String) -> Unit) = removeSession(userLoginKey)
     fun logout(userCredentials: HashedUserCredentials, removeSession: (HashedUserCredentials) -> Unit) = removeSession(userCredentials)
-    fun logout(userId: UserId, removeSession: (UserId) -> Unit) = removeSession(userId)
+    fun logout(userId: LongUserId, removeSession: (LongUserId) -> Unit) = removeSession(userId)
 
     fun delete(userCredentials: HashedUserCredentials, deleteFromDatabase: (HashedUserCredentials) -> Unit) = deleteFromDatabase(userCredentials)
-    fun delete(userId: UserId, deleteFromDatabase: (UserId) -> Unit) = deleteFromDatabase(userId)
+    fun delete(userId: LongUserId, deleteFromDatabase: (LongUserId) -> Unit) = deleteFromDatabase(userId)
 }

@@ -23,13 +23,13 @@ import org.junit.jupiter.api.Test
 
 class AuthFiltersTest {
     data class User(
-        override val userId: UserId?,
+        override val userId: LongUserId?,
         override val userDetails: UserDetails?,
         override val userCredentials: HashedUserCredentials?
-    ) : UserEntity()
+    ) : UserEntity<LongUserId>()
 
-    object UserBuilderImpl : UserBuilder<User> {
-        override fun addId(user: User, userId: UserId): User =
+    object UserBuilderImpl : UserBuilder<LongUserId, User> {
+        override fun addId(user: User, userId: LongUserId): User =
             User(userId, user.userDetails, user.userCredentials)
 
         override fun addCredentials(user: User, credentials: HashedUserCredentials): User =
@@ -40,7 +40,7 @@ class AuthFiltersTest {
 
     }
 
-    val db: MutableMap<UserId, User> = mutableMapOf()
+    val db: MutableMap<LongUserId, User> = mutableMapOf()
     val sdb: MutableMap<Session, User> = mutableMapOf()
 
     @Test
@@ -118,7 +118,7 @@ class AuthFiltersTest {
                             RawPassword(map["password"]!!)
                         )
                     ) {
-                        val userId = UserId(1L)
+                        val userId = LongUserId(1L)
                         db[userId] = UserBuilderImpl.addId(it, userId)
                         userId
                     }
@@ -146,7 +146,7 @@ class AuthFiltersTest {
         val accessAttempt = app(Request(GET, "/ping").cookie(response.cookies().first().also { println(it) }))
         assertThat(accessAttempt, hasStatus(OK))
 
-        auth.logout(UserId(1)) { userId ->
+        auth.logout(LongUserId(1)) { userId ->
             sdb.remove(sdb.filter { it.value.userId == userId }.keys.firstOrNull())
         }
 

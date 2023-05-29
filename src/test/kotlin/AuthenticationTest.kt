@@ -14,37 +14,37 @@ class AuthenticationTest {
 
 
     data class UserImpl(
-        override val userId: UserId?,
+        override val userId: LongUserId?,
         override val userDetails: UserDetails?,
         override val userCredentials: HashedUserCredentials?
-    ) : UserEntity()
+    ) : UserEntity<LongUserId>()
 
-    class UserBuilderImpl : UserBuilder<UserImpl> {
-        override fun addId(user: UserImpl, userId: UserId): UserImpl = UserImpl(userId, user.userDetails, user.userCredentials)
+    class UserBuilderImpl : UserBuilder<LongUserId, UserImpl> {
+        override fun addId(user: UserImpl, userId: LongUserId): UserImpl = UserImpl(userId, user.userDetails, user.userCredentials)
 
         override fun addCredentials(user: UserImpl, credentials: HashedUserCredentials): UserImpl = UserImpl(user.userId, user.userDetails, credentials)
         override fun addDetails(user: UserImpl, details: UserDetails): UserImpl = UserImpl(user.userId, details, user.userCredentials)
     }
     private val builder = UserBuilderImpl()
 
-    private val userDb = mutableMapOf<UserId, UserImpl>()
-    private fun addToDb(user: UserImpl): UserId =
+    private val userDb = mutableMapOf<LongUserId, UserImpl>()
+    private fun addToDb(user: UserImpl): LongUserId =
         getFreeId().also { id ->
             userDb[id] = builder.addId(user, id)
         }
 
-    private fun getFreeId(): UserId {
-        val randomId = UserId(Random.nextLong(100 + userDb.size.toLong()))
+    private fun getFreeId(): LongUserId {
+        val randomId = LongUserId(Random.nextLong(100 + userDb.size.toLong()))
         return if (userDb.containsKey(randomId))
             getFreeId()
         else
             randomId
     }
 
-    val getUserByLoginKey = { loginKey: String -> userDb.filter {  entry: Map.Entry<UserId, UserImpl> ->
+    val getUserByLoginKey = { loginKey: String -> userDb.filter {  entry: Map.Entry<LongUserId, UserImpl> ->
         entry.value.getCredentials().loginKey == loginKey
     }.values.firstOrNull() }
-    private val auth = auth4k.Authentication<UserImpl>(userBuilder = builder) {
+    private val auth = auth4k.Authentication<LongUserId, UserImpl>(userBuilder = builder) {
         getUserByLoginKey(it)
     }
 
@@ -57,8 +57,8 @@ class AuthenticationTest {
     @Test
     fun testLogin() {
         val userCredentials = RawUserCredentials("test@testmail.com", RawPassword("testpassword123"))
-        val sessionDb = mutableMapOf<Session, UserId>()
-        val createSession = { session: Session, userId: UserId ->
+        val sessionDb = mutableMapOf<Session, LongUserId>()
+        val createSession = { session: Session, userId: LongUserId ->
             sessionDb[session] = userId
         }
 
@@ -87,8 +87,8 @@ class AuthenticationTest {
         val existingTestUser = UserImpl(null, object : UserDetails {}, userCredentials.hash(DefaultBcryptHasher))
         val id = addToDb(existingTestUser)
 
-        val sessionDb = mutableMapOf<Session, UserId>()
-        val createSession = { session: Session, userId: UserId ->
+        val sessionDb = mutableMapOf<Session, LongUserId>()
+        val createSession = { session: Session, userId: LongUserId ->
             sessionDb[session] = userId
         }
 
@@ -126,7 +126,7 @@ class AuthenticationTest {
 
         val registration = auth.register(newUser, newUserCredentials, ::addToDb)
         assertFalse(registration.fold({ true }, { false }))
-        val id: UserId = registration.getOrNull()!!
+        val id: LongUserId = registration.getOrNull()!!
 
         assertEquals(newUserCredentials.loginKey, userDb[id]!!.getCredentials().loginKey)
         assertEquals(userCount + 1, userDb.size)
@@ -138,15 +138,15 @@ class AuthenticationTest {
 
     @Test
     fun testLogout() {
-        var sessionDb = mutableMapOf<Session, UserId>()
-        val createSession = { session: Session, userId: UserId ->
+        var sessionDb = mutableMapOf<Session, LongUserId>()
+        val createSession = { session: Session, userId: LongUserId ->
             sessionDb[session] = userId
         }
         fun randomSession() = Session(UUID.randomUUID().toString())
 
-        createSession(randomSession(), UserId(42))
+        createSession(randomSession(), LongUserId(42))
         assertEquals(1, sessionDb.size)
-        auth.logout(UserId(42)) { id ->
+        auth.logout(LongUserId(42)) { id ->
             sessionDb = sessionDb.filter { it.value != id }.toMutableMap()
         }
         assertEquals(0, sessionDb.size)

@@ -8,11 +8,11 @@ sealed class UserEntityException(msg: String) : Exception(msg) {
     object UserPasswordNotHashedException : UserEntityException("Access to user password despite it not yet being hashed.")
 }
 
-abstract class UserEntity {
-    abstract val userId: UserId?
+abstract class UserEntity<T : IdType> {
+    abstract val userId: T?
     abstract val userDetails: UserDetails?
     abstract val userCredentials: HashedUserCredentials?
-    fun getId(): UserId = userId ?: throw UserEntityException.IdNotGivenException
+    fun getId(): T = userId ?: throw UserEntityException.IdNotGivenException
 
     @Suppress("unused")
     fun getDetails(): UserDetails = userDetails ?: throw UserEntityException.DetailsNotGivenException
@@ -21,10 +21,10 @@ abstract class UserEntity {
 
 }
 
-interface UserBuilder<T : UserEntity> {
-    fun addId(user: T, userId: UserId): T
-    fun addCredentials(user: T, credentials: HashedUserCredentials): T
-    fun addDetails(user: T, details: UserDetails): T
+interface UserBuilder<A : IdType, B : UserEntity<A>> {
+    fun addId(user: B, userId: A): B
+    fun addCredentials(user: B, credentials: HashedUserCredentials): B
+    fun addDetails(user: B, details: UserDetails): B
 }
 
 /*

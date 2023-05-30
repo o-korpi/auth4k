@@ -11,16 +11,17 @@ First, we need to plug in the right types for everything to work. Our user model
 import auth4k.types.user.*
 
 data class User : UserEntity(
-	override val userId: UserId?,
+	override val userId: UUIDUserId?,
 	override val userDetails: UserDetails?,
 	override val userCredentials: HashedUserCredentials?
 )
 ```
+Note that `LongUserId` or `IntUserId` may be used instead of `UUIDUserId`, depending on your needs.
 
 Unfortunately, because of some limitations, we also need to implement the `UserBuilder` class:
 ```kotlin
-object MyUserBuilder : UserBuilder<User> {
-	override fun addId(user: User, userId: UserId): User =  
+object MyUserBuilder : UserBuilder<UUIDUserId, User> {
+	override fun addId(user: User, userId: UUIDUserId): User =  
 		User(userId, user.userDetails, user.userCredentials)  
   
 	override fun addCredentials(user: User, credentials: HashedUserCredentials): User =  
